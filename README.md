@@ -33,8 +33,7 @@ The project is created with:
 ## Status
 Some features will be implemented to make the app more comfortable to use.
 
-###
-What will be done
+### What will be done next
 - [ ] A list of files that are ready for final delivery will be added, option for their removing from the list and structure will be implemented as well.
 - [ ] Layout are going to be redesigned and rearranged.
 - [ ] Implementation of zip packaging
