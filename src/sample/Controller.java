@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import sample.alerts.Alerts;
@@ -13,11 +14,15 @@ import sample.file.MultipleDirectoryChooser;
 import sample.file.SingleDirectoryChooser;
 import sample.filter.InDesignFilter;
 import sample.filter.PathFilter;
+import sample.manager.DeleteDirectory;
 import sample.manager.FileManager;
 import sample.paths.Directories;
 import sample.paths.PathBuilder;
 
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -28,7 +33,7 @@ public class Controller {
     private final Stage thisStage;
 
     @FXML
-    private ListView sourceCodes;
+    private ListView sourceCodes, finalFiles;
 
     @FXML
     private BorderPane mainWindow;
@@ -37,6 +42,7 @@ public class Controller {
     private TextField targetField;
 
     private ArrayList<Path> sourceDirectories = new ArrayList<>();
+    private ArrayList<Path> filestToDelivery = new ArrayList<>();
     private Path targetPath;
 
     public Controller() {
@@ -47,6 +53,7 @@ public class Controller {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
             loader.setController(this);
             thisStage.setScene(new Scene(loader.load()));
+            thisStage.setResizable(false);
             thisStage.setTitle("Delivery manager");
 
         } catch (IOException e) {
@@ -65,7 +72,8 @@ public class Controller {
     }
 
     public void initialize() {
-        targetField.setText(System.getProperty("user.home"));
+      //  targetField.setText(System.getProperty("user.home"));
+        targetField.setText("E:\\Target");
         targetPath = Paths.get(targetField.getText());
     }
 
@@ -74,13 +82,30 @@ public class Controller {
         multipleFileChooser.run();
     }
 
-    public ArrayList<Path> deleteItemFromList() {
+    public void deleteItemFromList() {
         Path path =  (Path) sourceCodes.getSelectionModel().getSelectedItem();
         if(sourceDirectories != null) {
             sourceDirectories.remove(path);
             sourceCodes.getItems().remove(path);
         }
-        return null;
+    }
+
+    public void test() {
+        if(filestToDelivery.size() > 0) {
+            Path path = Paths.get(filestToDelivery.get(0).toAbsolutePath().toString());
+            System.out.println(path);
+            try {
+                Runtime.getRuntime().exec("explorer.exe /select," + path);
+            } catch (IOException e) {
+
+            }
+        } else {
+            new Alerts.Builder()
+                    .alertType(new Alert(Alert.AlertType.INFORMATION))
+                    .title("Empty path")
+                    .content("There is no files for delivery")
+                    .build();
+        }
     }
 
     public void copyFiles() {
@@ -99,10 +124,26 @@ public class Controller {
            PathFilter pathFilter = new InDesignFilter();
            for(Path singlePath : sourceDirectories) {
                PathBuilder pathBuilder = new PathBuilder(singlePath, targetPath, Directories.INND);
-               new FileManager(singlePath).copyFiles(pathFilter, pathBuilder);
+               FileManager fileManager = new FileManager(singlePath, filestToDelivery);
+               fileManager.copyFiles(pathFilter, pathBuilder);
            }
+           sourceCodes.getItems().clear();
+           finalFiles.getItems().setAll(filestToDelivery);
+           sourceDirectories.removeAll(sourceDirectories);
         }
     }
 
+    public void remove() {
+        try {
+            if(finalFiles != null) {
+                Path path =  (Path) finalFiles.getSelectionModel().getSelectedItem();
+                Files.walkFileTree(path, new DeleteDirectory());
+                finalFiles.getItems().remove(path);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
 }

@@ -1,35 +1,38 @@
 package sample.manager;
 
+import javafx.scene.control.ListView;
 import sample.filter.PathFilter;
 import sample.paths.PathBuilder;
+
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class FileManager {
 
     private Path sourcePath;
     private Path targetPath;
+    private ArrayList<Path> filesToDelivery;
 
 
-    public FileManager(Path sourcePath) {
+    public FileManager(Path sourcePath, ArrayList<Path> filesToDelivery) {
         this.sourcePath = sourcePath;
+        this.filesToDelivery = filesToDelivery;
     }
 
-    private Path createDirectory(PathBuilder buildPath) {
+    private void createDirectory(PathBuilder buildPath) {
         if(buildPath != null) {
             try {
                 this.targetPath = Files.createDirectories(Paths.get(buildPath.buildPath().toString()));
-
+                filesToDelivery.add(targetPath.getParent());
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-        return this.targetPath;
     }
 
     public void copyFiles(PathFilter PathFilter, PathBuilder buildPath){

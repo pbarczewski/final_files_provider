@@ -26,17 +26,14 @@ public class Visitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-
         Path fileRetaltivize = source.relativize(file);
         Path fileResolved = target.resolve(fileRetaltivize);
         Files.copy(file.toAbsolutePath(), fileResolved, StandardCopyOption.REPLACE_EXISTING);
-
         return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-
         return FileVisitResult.CONTINUE;
     }
 
